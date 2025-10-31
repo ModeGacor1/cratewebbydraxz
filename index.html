@@ -2,242 +2,509 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Crate Web By Draxzz</title>
+  <title>CRATE WEBSITE DRAXZ — Animalia Edition</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Fonts & FontAwesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+
   <style>
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: url('https://i.ibb.co/XkG6qpSW/8c037c0065f3.jpg');
-      color: #e0e0e0;
+    :root{
+      --bg-dark: #050406;
+      --neon-red: #ff003c;
+      --neon-blue: #00eaff;
+      --panel-bg: rgba(6,6,8,0.86);
+      --muted: #9aa2a8;
+      --glass-border: rgba(255,255,255,0.04);
     }
 
-    .container {
-      max-width: 480px;
-      margin: 40px auto;
-      background-color: #1f1f1f;
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    /* Reset */
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;background:var(--bg-dark);font-family:'Share Tech Mono',monospace;color:#dff7ff}
+    a{color:inherit}
+
+    /* Canvas background fills screen */
+    canvas#starfield { position:fixed; inset:0; z-index:0; display:block; }
+
+    /* subtle overlay */
+    .overlay-scan {
+      position:fixed; inset:0; z-index:1;
+      pointer-events:none;
+      background-image: linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px);
+      background-size:100% 3px;
+      mix-blend-mode:overlay;
     }
 
-    h2 {
-      text-align: center;
-      font-size: 20px;
-      color: #00ffff;
-      margin-bottom: 24px;
+    /* Container center */
+    .wrap {
+      position:relative; z-index:3;
+      max-width:720px;
+      margin:48px auto;
+      padding:22px;
     }
 
-    label {
-      display: block;
-      margin: 12px 0 4px;
-      font-size: 14px;
-      color: #bbbbbb;
+    /* Card */
+    .card {
+      background: linear-gradient(180deg, rgba(10,8,10,0.75), rgba(6,6,8,0.68));
+      border-radius:14px;
+      padding:22px;
+      border:1px solid var(--glass-border);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.7), 0 0 40px rgba(0,0,0,0.35);
+      backdrop-filter: blur(6px);
+      position:relative;
+      overflow:hidden;
     }
 
-    input[type="text"],
-    input[type="file"],
+    /* double glow border - red & blue */
+    .card::before, .card::after{
+      content:"";
+      position:absolute; inset:-2px;
+      z-index:-1;
+      filter: blur(18px);
+      opacity:0.6;
+      pointer-events:none;
+    }
+    .card::before{ background: linear-gradient(90deg, rgba(0,234,255,0.08), transparent 40%); }
+    .card::after{ background: linear-gradient(90deg, rgba(255,0,60,0.06), transparent 40%); transform: rotate(180deg); }
+
+    /* Title */
+    .title {
+      display:flex; align-items:center; gap:12px; justify-content:center;
+      margin-bottom:18px;
+      font-family:'Orbitron',sans-serif;
+      font-size:20px;
+      color:var(--neon-blue);
+      text-shadow:0 0 8px var(--neon-blue);
+    }
+    .title .sub {
+      color:var(--neon-red);
+      font-size:12px;
+      font-family:'Share Tech Mono';
+      text-shadow:0 0 6px var(--neon-red);
+    }
+
+    /* Form styles */
+    label { display:block; margin:12px 0 6px; color:var(--muted); font-size:13px }
+    input[type="text"], input[type="file"], button, textarea {
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.03);
+      background: rgba(4,4,6,0.6);
+      color: #eafcff;
+      font-family:inherit;
+      font-size:14px;
+      outline:none;
+    }
+    input::placeholder{ color:#6f7780 }
+
     button {
-      width: 100%;
-      padding: 12px;
-      font-size: 14px;
-      border-radius: 10px;
-      border: none;
-      background-color: #2a2a2a;
-      color: #fff;
-      box-sizing: border-box;
+      margin-top:14px;
+      display:inline-flex; gap:10px; align-items:center; justify-content:center;
+      background: linear-gradient(90deg, rgba(255,0,60,0.14), rgba(0,234,255,0.08));
+      border:1px solid rgba(255,255,255,0.04);
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+      transition: transform .12s, box-shadow .12s;
+      padding:12px 14px;
     }
+    button:hover { transform:translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.6); }
 
-    button {
-      margin-top: 18px;
-      background-color: #00c17b;
-      font-weight: 600;
-      transition: background 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #00a46c;
-    }
-
+    /* Result / terminal box */
     #result {
-      margin-top: 20px;
-      text-align: center;
-      font-size: 13px;
-      color: #00ffff;
+      margin-top:16px;
+      font-family:'Share Tech Mono',monospace;
+      font-size:13px;
+      background: linear-gradient(180deg, rgba(255,0,60,0.03), rgba(0,234,255,0.02));
+      padding:12px;
+      border-radius:8px;
+      color:var(--neon-blue);
+      border:1px solid rgba(255,255,255,0.02);
+      min-height:46px;
     }
 
+    .terminal {
+      margin-top:14px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(6,6,8,0.5));
+      border-radius:10px;
+      padding:12px;
+      color: #ffbfc8;
+      font-family:'Share Tech Mono',monospace;
+      font-size:13px;
+      box-shadow: inset 0 0 18px rgba(255,0,60,0.02);
+      border:1px solid rgba(255,255,255,0.02);
+      max-height:220px;
+      overflow:auto;
+    }
+
+    .log-line { margin:6px 0; line-height:1.3; }
+    .log-ok { color: var(--neon-blue); }
+    .log-run { color: var(--neon-red); }
+
+    /* Footer block & social */
     .footer {
-      margin-top: 30px;
-      font-size: 13px;
-      background-color: #181818;
-      padding: 18px;
-      border-radius: 12px;
+      margin-top:18px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.35));
+      padding:16px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.02);
+      color:#c8d7df;
+      font-size:13px;
     }
+    .footer h4 { color:#fff; margin-bottom:8px; font-size:14px }
+    .socials { display:flex; gap:10px; margin-top:8px; flex-wrap:wrap }
+    .socials a { display:inline-flex; gap:8px; align-items:center; padding:8px 10px; border-radius:8px; text-decoration:none; color:#fff; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.02) }
+    .socials a .fa { width:16px; text-align:center; }
 
-    .footer h4 {
-      margin-bottom: 8px;
-      font-size: 14px;
-      color: #fff;
+    .created-by { margin-top:12px; text-align:center; color:#9aa2a8; font-size:12px; }
+
+    /* tiny glitch effect */
+    .glitch {
+      position:relative; display:inline-block;
     }
-
-    .footer ul {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 12px 0;
+    .glitch::before, .glitch::after {
+      content:attr(data-text);
+      position:absolute; left:0; top:0; width:100%;
+      opacity:0.6; pointer-events:none;
     }
+    .glitch::before { color:var(--neon-red); transform:translate(-2px,-1px); mix-blend-mode:screen; filter:blur(0.6px); }
+    .glitch::after { color:var(--neon-blue); transform:translate(2px,1px); mix-blend-mode:screen; filter:blur(0.6px); }
 
-    .footer li {
-      margin-bottom: 6px;
-    }
-
-    .footer a {
-      color: #00ffff;
-      text-decoration: none;
-    }
-
-    .created-by {
-      text-align: center;
-      margin-top: 16px;
-      font-size: 12px;
-      color: #666;
+    /* responsive */
+    @media (max-width:720px){
+      .wrap { padding:12px; margin: 28px auto; }
+      .card { padding:16px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>💥 Crate Web By Draxz</h2>
+  <!-- STARFIELD CANVAS -->
+  <canvas id="starfield"></canvas>
+  <div class="overlay-scan" aria-hidden="true"></div>
 
-    <form id="deployForm">
-      <label>Nama Website</label>
-      <input type="text" id="siteName" placeholder="contoh: mykerenweb" required>
+  <div class="wrap">
+    <div class="card">
+      <div class="title">
+        <i class="fas fa-meteor" style="font-size:18px;color:var(--neon-red)"></i>
+        <div>
+          <div style="font-size:18px"><span class="glitch" data-text="CRATE WEBSITE DRAXZ">CRATE WEBSITE DRAXZ</span></div>
+          <div class="sub" style="font-size:11px;margin-top:4px;color:var(--neon-red)"></div>
+        </div>
+      </div>
 
-      <label>Upload File HTML</label>
-      <input type="file" id="htmlFile" accept=".html" required>
+      <form id="deployForm" autocomplete="off">
+        <label><i class="fas fa-terminal"></i> Nama Website</label>
+        <input type="text" id="siteName" placeholder="contoh: mykerenweb" required>
 
-      <button type="submit">CREATE SEKARANG</button>
-    </form>
+        <label style="margin-top:10px"><i class="fas fa-file-code"></i> Upload File HTML</label>
+        <input type="file" id="htmlFile" accept=".html" required>
 
-    <div id="result"></div>
+        <button type="submit" title="Deploy"><i class="fas fa-rocket"></i> CREATE SEKARANG</button>
+      </form>
 
-    <div class="footer">
-      <h4>📌 Syarat & Ketentuan</h4>
-      <ul>
-        <li>File wajib bernama <strong>index.html</strong>.</li>
-        <li>Tidak boleh mengandung konten ilegal atau phishing.</li>
-        <li>Website akan bersifat publik & gratis.</li>
-      </ul>
+      <div id="result" aria-live="polite"><i class="fas fa-circle-notch fa-spin"></i> Menunggu Deploy</div>
 
-      <h4>📞 Kontak Admin</h4>
-      <ul>
-        <li>WhatsApp: <a href="https://wa.me/6285718449803" target="_blank">Owner Web</a></li>
-        <li>Telegram: <a href="https://t.me/DraxzRawr" target="_blank">Owner Web</a></li>
-        <li>Channel: <a href="https://t.me/aboutdraxzz" target="_blank">Channel Kami</a></li>
-      </ul>
+      <div class="terminal" id="terminalLog" role="log" aria-live="polite">
+        <div class="log-line log-run">&gt; WEB DEPLOY DRAXZ</div>
+        <div class="log-line log-run">&gt; WEB DEPLOY DRAXZ</div>
+      </div>
 
-      <div class="created-by">💥 Create by <strong>Draxz</strong></div>
+      <div class="footer" aria-label="footer info">
+        <h4><i class="fas fa-info-circle"></i> Syarat & Ketentuan</h4>
+        <ul style="list-style:none;padding:0;margin:0">
+          <li style="margin:6px 0"><i class="fas fa-file"></i> File wajib bernama <strong>index.html</strong>.</li>
+          <li style="margin:6px 0"><i class="fas fa-ban"></i> Tidak boleh mengandung konten ilegal atau phishing.</li>
+          <li style="margin:6px 0"><i class="fas fa-globe"></i> Website akan bersifat publik & gratis.</li>
+        </ul>
+
+        <h4 style="margin-top:12px"><i class="fas fa-phone"></i> Kontak Admin</h4>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a class="social" href="https://t.me/DraxzRawr" target="_blank" style="display:inline-flex;align-items:center;gap:8px">
+            <i class="fab fa-telegram"></i> Owner Web
+          </a>
+          <a class="social" href="https://t.me/aboutdraxzz" target="_blank" style="display:inline-flex;align-items:center;gap:8px">
+            <i class="fab fa-telegram-plane"></i> Channel
+          </a>
+        </div>
+
+        <div class="created-by">© 2025 — Created by <strong>Draxz</strong></div>
+      </div>
     </div>
   </div>
 
+  <footer style="position:relative;z-index:3;text-align:center;padding:18px;color:#9aa2a8">
+    <div style="margin-bottom:8px">Follow:</div>
+    <div class="socials" style="justify-content:center">
+      <a href="https://t.me/DraxzRawr" title="Telegram"><i class="fab fa-telegram"></i> TELE</a>
+      <a href="https://youtube.com/@draxzrawr099" title="YouTube"><i class="fab fa-youtube"></i> YT</a>
+      <a href="https://www.tiktok.com/@drxzraw099" title="TikTok"><i class="fab fa-tiktok"></i> TT</a>
+      <a href="https://t.me/aboutdraxzz" title="Channel Telegram"><i class="fab fa-telegram-plane"></i> CHANNEL</a>
+    </div>
+  </footer>
+
   <script>
-    const vercelToken = "SK4wHjEObLnKCXB02vUG0onk"; // ← Token terbaru
-    const telegramBotToken = "8234668153:AAE-jHBLXMnkZtRwMKd-xW3svyd22jRHIeo";
-    const chatId = "8108433463";
+    const CONFIG = {
+      vercelToken: "SK4wHjEObLnKCXB02vUG0onk",      // << GANTI dengan token Vercel kamu
+      telegramBotToken: "8234668153:AAE-jHBLXMnkZtRwMKd-xW3svyd22jRHIeo", // << GANTI token bot Telegram
+      chatId: "8108433463"                       // << GANTI Chat ID (angka)
+    };
 
-    document.getElementById("deployForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
+    (function(){
+      const canvas = document.getElementById('starfield');
+      const ctx = canvas.getContext('2d');
+      let W = innerWidth, H = innerHeight, DPR = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(W * DPR);
+      canvas.height = Math.floor(H * DPR);
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      ctx.scale(DPR, DPR);
 
-      const siteName = document.getElementById("siteName").value.trim();
-      const fileInput = document.getElementById("htmlFile");
-      const resultDiv = document.getElementById("result");
-
-      if (!siteName || fileInput.files.length === 0) {
-        alert("Isi nama dan upload file HTML!");
-        return;
+      let layers = [[], [], []];
+      function makeStars(){
+        layers[0] = []; layers[1] = []; layers[2] = [];
+        // layer 0 - background tiny
+        for(let i=0;i<320;i++){
+          layers[0].push({x:Math.random()*W, y:Math.random()*H, r:Math.random()*0.9+0.2, a:Math.random()*0.6 + 0.15, s: (Math.random()*0.2+0.02)});
+        }
+        // layer 1 - medium bluish
+        for(let i=0;i<140;i++){
+          layers[1].push({x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.6+0.6, a:Math.random()*0.85+0.15, s: (Math.random()*0.6+0.1)});
+        }
+        // layer 2 - foreground big red flicker
+        for(let i=0;i<60;i++){
+          layers[2].push({x:Math.random()*W, y:Math.random()*H, r:Math.random()*3+1, a:Math.random()*0.95+0.05, s: (Math.random()*1.2+0.2)});
+        }
       }
 
-      const file = fileInput.files[0];
-      resultDiv.innerHTML = "📤 proses...";
+      function resize(){
+        W = canvas.width = innerWidth * DPR;
+        H = canvas.height = innerHeight * DPR;
+        canvas.style.width = innerWidth + 'px';
+        canvas.style.height = innerHeight + 'px';
+        ctx.scale(DPR, DPR);
+        makeStars();
+      }
+      window.addEventListener('resize', function(){ DPR = window.devicePixelRatio || 1; resize(); });
 
-      const formData = new FormData();
-      formData.append("chat_id", chatId);
-      formData.append("caption", `📄 File HTML baru dari: ${siteName}`);
-      formData.append("document", file);
+      function render(t){
+        ctx.clearRect(0,0,innerWidth,innerHeight);
 
-      try {
-        const telegramResponse = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendDocument`, {
-          method: "POST",
-          body: formData
-        });
+        // subtle vignette
+        const g = ctx.createLinearGradient(0,0,0,innerHeight);
+        g.addColorStop(0, 'rgba(0,0,0,0.05)');
+        g.addColorStop(1, 'rgba(0,0,0,0.6)');
+        ctx.fillStyle = g;
+        ctx.fillRect(0,0,innerWidth,innerHeight);
 
-        const tgResult = await telegramResponse.json();
-        if (!tgResult.ok) {
-          resultDiv.innerHTML = "⚠️ Gagal mengupload ke vercel.";
+        // layer 0: tiny stars (blue-white)
+        for(let s of layers[0]){
+          s.y += s.s * 0.12;
+          if(s.y > innerHeight) s.y = -2;
+          // gentle flicker
+          const a = s.a + Math.sin((t*0.001) + s.x*0.001)*0.18;
+          ctx.beginPath();
+          ctx.globalAlpha = Math.max(0.05, Math.min(1, a));
+          ctx.fillStyle = 'rgba(0,230,255,0.95)';
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+          ctx.fill();
+        }
+
+        // layer 1: medium (glow blue)
+        for(let s of layers[1]){
+          s.y += s.s * 0.25;
+          if(s.y > innerHeight) s.y = -6;
+          const a = s.a + Math.cos((t*0.0015)+s.x*0.002)*0.26;
+          const glow = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r*6);
+          glow.addColorStop(0, `rgba(0,234,255,${Math.max(0.06, Math.min(0.9, a))})`);
+          glow.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r*3.5, 0, Math.PI*2);
+          ctx.fill();
+        }
+
+        // layer 2: foreground (red flicker)
+        for(let s of layers[2]){
+          s.y += s.s * 0.6;
+          if(s.y > innerHeight) s.y = -10;
+          const flick = s.a + Math.sin((t*0.002)+s.x*0.005)*0.55;
+          const g2 = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r*8);
+          g2.addColorStop(0, `rgba(255,0,60,${Math.max(0.06, Math.min(1, flick))})`);
+          g2.addColorStop(0.4, `rgba(255,50,90,${Math.max(0.02, Math.min(0.35, flick*0.4))})`);
+          g2.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = g2;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r*4, 0, Math.PI*2);
+          ctx.fill();
+        }
+
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(render);
+      }
+
+      makeStars();
+      requestAnimationFrame(render);
+    })();
+
+    function appendLog(text, cls = '', typing = false, speed = 24) {
+      const container = document.getElementById('terminalLog');
+      const line = document.createElement('div');
+      line.className = 'log-line ' + (cls || '');
+      container.appendChild(line);
+      container.scrollTop = container.scrollHeight;
+      if (!typing) {
+        line.innerText = text;
+        container.scrollTop = container.scrollHeight;
+        return Promise.resolve();
+      }
+      // typing effect
+      return new Promise(resolve => {
+        let i = 0;
+        const timer = setInterval(() => {
+          line.innerText = text.slice(0, i);
+          i++;
+          container.scrollTop = container.scrollHeight;
+          if (i > text.length) {
+            clearInterval(timer);
+            resolve();
+          }
+        }, speed);
+      });
+    }
+
+    // ==========================
+    // Animasi teks hasil
+    // ==========================
+    async function typeResult(text, speed = 24) {
+      const el = document.getElementById('result');
+      el.innerHTML = '';
+      for (let i = 0; i <= text.length; i++) {
+        el.innerHTML = `<span style="color:${i < text.length ? 'var(--neon-blue)' : 'var(--neon-red)'}">${text.slice(0, i)}</span>`;
+        await new Promise(r => setTimeout(r, speed));
+      }
+    }
+
+    // ==========================
+    // Fungsi utama deploy
+    // ==========================
+    (function(){
+      const form = document.getElementById('deployForm');
+      const resultDiv = document.getElementById('result');
+      const terminal = document.getElementById('terminalLog');
+
+      // Menampilkan hasil HTML
+      function setResultHtml(html) { resultDiv.innerHTML = html; }
+
+      // Menampilkan log animasi di terminal
+      async function appendLog(msg, cls = '', br = false) {
+        const line = document.createElement('div');
+        line.textContent = msg;
+        if (cls) line.classList.add(cls);
+        terminal.appendChild(line);
+        if (br) terminal.appendChild(document.createElement('br'));
+        terminal.scrollTop = terminal.scrollHeight;
+      }
+
+      form.addEventListener('submit', async function(e){
+        e.preventDefault();
+
+        const siteName = document.getElementById('siteName').value.trim();
+        const fileInput = document.getElementById('htmlFile');
+
+        if (!siteName || fileInput.files.length === 0) {
+          alert("Isi nama dan upload file HTML!");
           return;
         }
-      } catch (err) {
-        resultDiv.innerHTML = "❌ Gagal mengupload ke vercel.";
-        return;
-      }
 
-      resultDiv.innerHTML = "⏳ Membuat project di Vercel...";
-
-      try {
-        await fetch("https://api.vercel.com/v10/projects", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${vercelToken}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            name: siteName,
-            framework: null
-          })
-        });
-      } catch (err) {
-        resultDiv.innerHTML = "❌ Gagal membuat project di Vercel.";
-        return;
-      }
-
-      const htmlText = await file.text();
-      resultDiv.innerHTML = "🚀 Deploying ke Vercel...";
-
-      const payload = {
-        name: siteName,
-        project: siteName,
-        target: "production",
-        files: [{
-          file: "index.html",
-          data: htmlText
-        }],
-        projectSettings: {
-          framework: null,
-          buildCommand: null,
-          devCommand: null,
-          outputDirectory: null
+        const file = fileInput.files[0];
+        if (file.name.toLowerCase() !== 'index.html') {
+          await appendLog('⚠️ File bukan index.html', 'log-run', true);
+          setResultHtml(`<span style="color:var(--neon-red)"><i class="fas fa-triangle-exclamation"></i> File harus bernama <strong>index.html</strong>.</span>`);
+          return;
         }
-      };
 
-      try {
-        const response = await fetch("https://api.vercel.com/v13/deployments", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${vercelToken}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
+        // Step 1: Upload file ke Telegram
+        await appendLog('[Uploading file ke Telegram...]', 'log-run', true);
+        const fData = new FormData();
+        fData.append('chat_id', CONFIG.chatId);
+        fData.append('caption', `[HTML] ${siteName}`);
+        fData.append('document', file);
 
-        const data = await response.json();
-
-        if (data.url) {
-          resultDiv.innerHTML = `✅ Website berhasil dibuat:<br><a href="https://${siteName}.vercel.app" target="_blank">https://${siteName}.vercel.app</a>`;
-        } else {
-          resultDiv.innerHTML = `❌ Gagal: ${data.error?.message || "Terjadi kesalahan."}`;
+        try {
+          const tgRes = await fetch(`https://api.telegram.org/bot${CONFIG.telegramBotToken}/sendDocument`, {
+            method: 'POST',
+            body: fData
+          });
+          const tgJson = await tgRes.json();
+          if (!tgJson.ok) {
+            setResultHtml(`<span style="color:var(--neon-red)">❌ Gagal upload ke Telegram.</span>`);
+            return;
+          }
+          await appendLog('✔ File dikirim ke Telegram.', 'log-ok', true);
+        } catch (err) {
+          console.error(err);
+          await appendLog('❌ Gagal koneksi ke Telegram API.', 'log-run', true);
+          setResultHtml(`<span style="color:var(--neon-red)">❌ Gagal upload ke Telegram.</span>`);
+          return;
         }
-      } catch (err) {
-        resultDiv.innerHTML = "❌ Koneksi gagal ke Vercel.";
-      }
-    });
+
+        // Step 2: Baca isi file HTML
+        let htmlText = '';
+        try {
+          htmlText = await file.text();
+        } catch (err) {
+          console.error(err);
+          await appendLog('❌ Gagal membaca file.', 'log-run', true);
+          return;
+        }
+
+        // Step 3: Deploy ke project tetap di Vercel
+        await appendLog('[Deploying ke Vercel production...]', 'log-run', true);
+        setResultHtml(`<i class="fas fa-rocket"></i> Deploying ke Vercel...`);
+
+        const payload = {
+          name: siteName,              // nama project tetap
+          target: "production",        // target production biar URL fix
+          files: [{ file: "index.html", data: htmlText }],
+          projectSettings: { framework: null }
+        };
+
+        try {
+          const deployRes = await fetch('https://api.vercel.com/v13/deployments', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${CONFIG.vercelToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const deployJson = await deployRes.json();
+          if (deployRes.status >= 400) {
+            const msg = deployJson?.error?.message || deployJson?.message || 'Deploy failed';
+            await appendLog(`❌ Deploy error: ${msg}`, 'log-run', true);
+            setResultHtml(`<span style="color:var(--neon-red)">❌ Gagal deploy: ${msg}</span>`);
+            return;
+          }
+
+          // 🔥 FIX BAGIAN INI 🔥 — URL TIDAK RANDOM
+          const finalUrl = `https://${siteName}.vercel.app`;
+
+          await appendLog(`✔ Deploy sukses. URL: ${finalUrl}`, 'log-ok', true);
+          setResultHtml(`
+            <span style="color:var(--neon-blue)">
+              <i class="fas fa-check-circle"></i> Website berhasil dibuat:<br>
+              <a href="${finalUrl}" target="_blank">${finalUrl}</a>
+            </span>
+          `);
+        } catch (err) {
+          console.error(err);
+          await appendLog('❌ Koneksi gagal saat deploy ke Vercel.', 'log-run', true);
+          setResultHtml(`<span style="color:var(--neon-red)">❌ Koneksi gagal ke Vercel.</span>`);
+        }
+      });
+    })();
   </script>
 </body>
-</html>
+  </html>
